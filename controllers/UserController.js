@@ -1,14 +1,22 @@
 const User = require('../models/UserModel'); 
-    exports.addUser= async (req, res) => {
-        try {
-            const userData = req.body;
-            const user = new User(userData);
-            await user.save();
-            res.status(201).json(user);
-        } catch (error) {
-            res.status(400).json({ error: error.message });
-        } 
-    };
+const bcrypt = require('bcrypt');
+exports.addUser = async (req, res) => {
+    try {
+      // Extract password from the request body
+      const { password, ...userData } = req.body;
+  
+      // Hash the password before saving it to the database
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      // Create a new user with the hashed password
+      const newUser = new User({ ...userData, password: hashedPassword });
+      await newUser.save();
+  
+      res.status(201).json(newUser);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  };
     exports.getAllUser= async (req, res) => {
         try {
             const user = await user.find();
