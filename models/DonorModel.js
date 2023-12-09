@@ -1,5 +1,5 @@
 const mongoose=require("mongoose");
-const  UserSchema=new mongoose.Schema({ 
+const  DonorSchema=new mongoose.Schema({ 
     firstName:{
         type:String,
         required: true
@@ -33,6 +33,8 @@ const  UserSchema=new mongoose.Schema({
         type:String, 
         required: true
     },
+    timeAdded: Date,
+    photo:String
 })
-const User = mongoose.model('User', UserSchema);
-module.exports = User;
+const Donor = mongoose.model('Donor', DonorSchema);
+module.exports = Donor;

@@ -17,12 +17,13 @@ const SchoolSchema = new mongoose.Schema({
     required: true,
   },
   nbr_student:Number,
-nbr_teachers: Number,
-nbr_classes:Number,
- needs: {
-    type: [String], 
-    required: true,
-  },
+  nbr_teachers: Number,
+  nbr_classes:Number,
+  type_needs: String,
+  needs: String,
+  image: String,
+  dateConfirmation: Date,
+  confirmation: Boolean,
 });
 
 const School = mongoose.model('School', SchoolSchema);

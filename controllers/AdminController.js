@@ -11,7 +11,7 @@ async function createAdmin(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create a new admin with the hashed password
-    const newAdmin = await Admin.create({ ...adminData, password: hashedPassword });
+    const newAdmin = await Admin.create({ ...adminData, password: hashedPassword })
 
     res.status(201).json(newAdmin);
   } catch (error) {

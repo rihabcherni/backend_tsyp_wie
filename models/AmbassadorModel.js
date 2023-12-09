@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const School = require("./SchoolModel");
 
 const AmbassadorSchema = new mongoose.Schema({
   firstName:{
@@ -50,11 +49,11 @@ required:true
   },
   address: {
     type: String,
-required:true
+    required:true
   },
   phoneNumber:{
-type: String,
-required:true
+    type: String,
+    required:true
   },
   password: {
     type: String,

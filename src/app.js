@@ -1,23 +1,40 @@
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
+
 const ambassadorRouter = require('../routes/AmbassadorRouter');
 const authRoutes = require("../routes/AuthRouter");
 const adminRouter = require("../routes/AdminRouter");
 const schoolRouter = require('../routes/SchoolRouter');
+const donorRouter= require("../routes/DonorRouter")
+const donationRouter= require("../routes/DonationRouter")
+const dashboardRouter= require("../routes/DashboardRouter")
+const path = require('path');
+
 const app = express();
 const port = 5000;
 require ('dotenv').config();
 const db= require('../config/bd')
+app.use(cors({
+  origin: 'http://localhost:4200', 
+  credentials: true, 
+}));
+
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
 res.send('Hello wie tsyp challenge!');
 });
 app.use('/school', schoolRouter); 
-const userRouter= require("../routes/UserRouter")
-app.use('/user',userRouter);
+app.use('/donor',donorRouter);
+app.use('/donation',donationRouter);
 app.use('/admin',adminRouter);
 app.use('/ambassador', ambassadorRouter);
+app.use('/dashboard', dashboardRouter);
+app.use('/uploads', express.static('uploads'));
+
+app.use(express.static('uploads'));
+
 app.listen(port, () => {
 console.log(`Server is running on port ${port}`);
 });
@@ -30,7 +47,6 @@ async function authenticateToken(req, res, next) {
     try {
         const token = req.header("Authorization").replace("Bearer ","");
         //console.log("Received token:", token);
-        
         const verified = jwt.verify(token, jwtSecretKey);
         if (verified) {
             // Token is valid, move to the next middleware or route handler
@@ -65,16 +81,16 @@ app.get("/admin", isTokenBlacklisted, authenticateToken, (req, res) => {
 });
 // Apply the middleware to protected routes
 app.get("/dashboard", isTokenBlacklisted, authenticateToken, (req, res) => {
-  res.json({ message: "Welcome to the user dashboard!" });
+  res.json({ message: "Welcome to the donor dashboard!" });
 });
 
-// When a user logs out, add their token to the blacklist
-function logoutUser(req, res) {
+// When a donor logs out, add their token to the blacklist
+function logoutDonor(req, res) {
   const token = req.header('Authorization');
   blacklistedTokens.add(token);
   res.json({ message: 'Logout successful' });
 }
 
-// Route to handle user logout
-app.post('/logout', logoutUser);
+// Route to handle donor logout
+app.post('/logout', logoutDonor);
 
