@@ -26,16 +26,16 @@ async function login(req, res) {
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-
-    // Generate a token and return it along with the user's role
     const token = jwt.generateToken(user);
     const userData = {
+      id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
       gender: user.gender,
       email: user.email,
       governorate: user.governorate,
       adresse: user.adresse,
+      photo: user.photo,
       phoneNumber: user.phoneNumber,
     };    
 

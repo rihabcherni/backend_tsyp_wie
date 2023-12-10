@@ -8,5 +8,9 @@ router.get("/DonationStatisticsByYear",DashboardController.DonationStatisticsByY
 router.get("/lastDonationAdmin",DashboardController.lastDonationAdmin);
 router.get("/lastDonorAdmin",DashboardController.lastDonorAdmin);
 
-module.exports = router;
+router.get("/StatistiquesDonor/:donorId",DashboardController.StatistiquesDonor);
+router.get("/lastDonationDonor/:donorId",DashboardController.lastDonationDonor);
+router.get("/lastSchoolDonor",DashboardController.lastSchoolDonor);
+router.get("/DonationStatisticsByYearDonor/:donorId",DashboardController.DonationStatisticsByYearDonor);
 
+module.exports = router;
