@@ -1,3 +1,4 @@
+const Ambassador = require('../models/AmbassadorModel');
 const School = require('../models/SchoolModel');
 
 // Create a new school
@@ -14,14 +15,40 @@ async function createSchool(req, res) {
 // Get all schools
 async function getAllSchools(req, res) {
   try {
-    const schools = await School.find();
-    res.status(200).json(schools);
+    const schools = await School.find().where({confirmation: true});
+    const schoolsWithAmbassadors = [];
+    for (const school of schools) {
+      const ambassadors = await Ambassador.find({ ReferencedSchool: school.id });
+      schoolsWithAmbassadors.push({
+        school,
+        ambassadors,
+      });
+    }
+    res.status(200).json({ schoolsWithAmbassadors });
   } catch (error) {
-    console.error('Error getting schools:', error.message);
-    res.status(500).json({ error: 'Error getting schools', details: error.message });
+    console.error('Error getting schools and ambassadors:', error.message);
+    res.status(500).json({ error: 'Error getting schools and ambassadors', details: error.message });
   }
 }
 
+// Get all schools request demande
+async function getAllSchoolsDemande(req, res) {
+  try {
+    const schools = await School.find().where({confirmation: false});
+    const schoolsWithAmbassadors = [];
+    for (const school of schools) {
+      const ambassadors = await Ambassador.find({ ReferencedSchool: school.id });
+      schoolsWithAmbassadors.push({
+        school,
+        ambassadors,
+      });
+    }
+    res.status(200).json({ schoolsWithAmbassadors });
+  } catch (error) {
+    console.error('Error getting schools and ambassadors:', error.message);
+    res.status(500).json({ error: 'Error getting schools and ambassadors', details: error.message });
+  }
+}
 async function getSchoolById(req, res) {
   const { id } = req.params;
   try {
@@ -75,4 +102,5 @@ module.exports = {
   getSchoolById,
   updateSchoolById,
   deleteSchoolById,
+  getAllSchoolsDemande,
 };

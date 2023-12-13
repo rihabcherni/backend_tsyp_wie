@@ -7,6 +7,7 @@ router.post('/addSchool', schoolController.createSchool);
 
 // Get all schools
 router.get('/getSchool', schoolController.getAllSchools);
+router.get('/getAllSchoolsDemande', schoolController.getAllSchoolsDemande);
 
 // Get school by ID
 router.get('/getSchool/:id', schoolController.getSchoolById);

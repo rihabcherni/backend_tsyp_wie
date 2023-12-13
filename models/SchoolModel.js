@@ -23,7 +23,7 @@ const SchoolSchema = new mongoose.Schema({
   needs: String,
   image: String,
   dateConfirmation: Date,
-  confirmation: Boolean,
+  confirmation: { type: Boolean, default: false },
 });
 
 const School = mongoose.model('School', SchoolSchema);

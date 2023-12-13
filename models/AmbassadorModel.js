@@ -2,12 +2,13 @@ const mongoose = require("mongoose");
 
 const AmbassadorSchema = new mongoose.Schema({
   firstName:{
-type: String,
-required:true
+    type: String,
+    required:true
   },
-  lastName:
-  {type: String,
-    required:true},
+  lastName:{
+    type: String,
+    required:true
+  },
   gender: {
     type: String,
     enum: ["masculin", "feminin"],
@@ -59,7 +60,7 @@ required:true
     type: String,
     required:true
   },
-  position:{
+  title:{
     type: String,
     required:true
   },
