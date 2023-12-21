@@ -62,6 +62,7 @@ const AmbassadorSchema = new mongoose.Schema({
   },
   title:{
     type: String,
+    enum: ["director", "teacher", "staff"],
     required:true
   },
   ReferencedSchool: {

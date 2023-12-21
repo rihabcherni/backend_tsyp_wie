@@ -9,5 +9,7 @@ router.get("/getAllDonationsByDonor/:Donor",DonationController.getAllDonationsBy
 router.put("/updateDonationById/:DonationId",DonationController.updateDonationById);
 router.delete("/deleteDonationById/:DonationId",DonationController.deleteDonationById);
 
+router.get("/getAllDonationsBySchool/:school",DonationController.getAllDonationsBySchool);
+
 module.exports = router;
 

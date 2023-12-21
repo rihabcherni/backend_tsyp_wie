@@ -1,16 +1,62 @@
 const Donor = require("../models/DonorModel");
 const Admin = require("../models/AdminModel");
 const Ambassador = require("../models/AmbassadorModel");
-const jwt = require("../config/jwt");
 const bcrypt = require("bcrypt");
 const multer = require('multer');
 const path = require('path');
+const Token = require("../models/TokenModel");
+const jwt = require("jsonwebtoken");
+const School = require("../models/SchoolModel");
+
+function generateToken(user) {
+  try {
+    let jwtSecretKey = process.env.JWT_SECRET_KEY;
+    let data = {
+      time: Date(),
+      userId: user._id, 
+      user: user,
+    };
+
+    const token = jwt.sign(data, jwtSecretKey);
+    return token;
+  } catch (error) {
+    console.error("Error generating token:", error.message);
+    throw error; 
+  }
+}
+const blacklistedTokens = new Set();
+function isTokenBlacklisted(req, res, next) {
+  const token = req.header('Authorization');
+  if (blacklistedTokens.has(token)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
+
+async function verifyToken(req, res, next) {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(403).send({ auth: false, message: 'No token provided.' });
+  const isBlacklisted = await Token.exists({ value: token });
+
+  if (isBlacklisted) {
+    return res.status(401).json({ auth: false, message: 'Token has been revoked.' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+
+    req.userId = decoded.id;
+    next();
+  });
+}
 
 async function login(req, res) {
   const { email, password } = req.body;
   try {
     let user;
     let userModel;
+    let school_id ; 
+    let school ; 
     if ((userDonor = await Donor.findOne({ email }))) {
       user = userDonor;
       userModel = 'Donor';
@@ -20,32 +66,38 @@ async function login(req, res) {
     } else if ((userAmbassador = await Ambassador.findOne({ email }))) {
       user = userAmbassador;
       userModel = 'Ambassador';
+      school_id=userAmbassador.ReferencedSchool;
+      school= await School.findById(school_id);
     } else {
       return res.status(401).json({ error: "Invalid credentials" });
     }
     if (!bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-    const token = jwt.generateToken(user);
-    const userData = {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      gender: user.gender,
-      email: user.email,
-      governorate: user.governorate,
-      adresse: user.adresse,
-      photo: user.photo,
-      phoneNumber: user.phoneNumber,
-    };    
-
-    res.json({ token, role: userModel, user: userData });
+    const token = generateToken(user);
+    const tokenDocument = new Token({ value: token });
+    await tokenDocument.save(); 
+    if(userModel=='Ambassador')  {
+      res.json({ token, role: userModel, user: user, school:school });
+    }else{
+      res.json({ token, role: userModel, user: user });
+    }
   } catch (error) {
     console.error("Error during login:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 }
-
+async function logout(req, res) {
+  try {
+    const token = req.headers['authorization'];
+    await Token.findOneAndDelete({ value: token });
+    blacklistedTokens.add(token);
+    res.json({ message: 'Logout successful', token: null });
+  } catch (error) {
+    console.error("Error during logout:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
 const storage = multer.diskStorage({
     destination: 'uploads/userProfile',
     filename: (req, file, cb) => {
@@ -98,4 +150,4 @@ const addImageProfile = [uploadUserProfile.single('photo'), async (req, res) => 
   }
 }];
 
-module.exports = { login,  addImageProfile};
+module.exports = { login, logout,  addImageProfile};

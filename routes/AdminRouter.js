@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const adminController = require('../controllers/adminController');
+const adminController = require('../controllers/AdminController');
 
-// Routes for CRUD operations on admins
 router.post('/createAdmin', adminController.createAdmin);
 router.get('/getAdmin', adminController.getAllAdmins);
 router.get('/getAdmin/:id', adminController.getAdminById);

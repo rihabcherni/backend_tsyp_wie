@@ -49,6 +49,18 @@ const Donor = require('../models/DonorModel');
         }
     };
     
+    const getAllDonationsBySchool = async (req, res) => {
+        const schoolId = req.params.school;    
+        try {
+            const donations = await Donation.find({ school: schoolId })    
+            .populate('school', 'name address governorate nbr_student nbr_teachers nbr_classes type_needs needs')
+            .populate('donor', 'firstName lastName email')
+            .sort({ dateDonation: -1 }); 
+          res.status(200).json({ success: true, data: donations });
+        } catch (error) {
+          res.status(500).json({ success: false, error: error.message });
+        }
+    };
     const getDonationById = async (req, res) => {
         try {
         const donation = await Donation.findById(req.params.id);
@@ -89,4 +101,5 @@ module.exports = {
     updateDonationById,
     deleteDonationById,
     getAllDonationsByDonor,
+    getAllDonationsBySchool,
 };

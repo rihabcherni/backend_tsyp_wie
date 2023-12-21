@@ -1,18 +1,47 @@
 const Ambassador = require('../models/AmbassadorModel');
 const School = require('../models/SchoolModel');
-
-// Create a new school
-async function createSchool(req, res) {
+const path = require('path');
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: 'uploads/school',
+  filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+  } else {
+      cb(new Error('Only image files are allowed!'), false);
+  }
+};
+const uploadSchoolPhoto = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 1024 * 1024 * 7, 
+  },
+});
+const createSchool = [uploadSchoolPhoto.single('image'), async (req, res) => {
   try {
-    const newSchool = await School.create(req.body);
-    res.status(201).json(newSchool);
+    const existingSchool = await School.findOne({ name: req.body.name });
+    if (existingSchool) {
+      return res.status(400).json({ error: 'school already exists' });
+    }
+    let image;
+    if (req.file) {
+      image = req.file.filename;
+    }
+
+    const newSchool = new School({ ...req.body, image:image });
+    await newSchool.save();
+    res.status(201).json({school:newSchool});
   } catch (error) {
     console.error('Error creating school:', error.message);
     res.status(500).json({ error: 'Error creating school', details: error.message });
   }
-}
-
-// Get all schools
+}];
 async function getAllSchools(req, res) {
   try {
     const schools = await School.find().where({confirmation: true});
@@ -30,8 +59,6 @@ async function getAllSchools(req, res) {
     res.status(500).json({ error: 'Error getting schools and ambassadors', details: error.message });
   }
 }
-
-// Get all schools request demande
 async function getAllSchoolsDemande(req, res) {
   try {
     const schools = await School.find().where({confirmation: false});
@@ -63,8 +90,6 @@ async function getSchoolById(req, res) {
     res.status(500).json({ error: 'Error getting school', details: error.message });
   }
 }
-
-// Update school by ID
 async function updateSchoolById(req, res) {
   const { id } = req.params;
   try {
@@ -79,8 +104,6 @@ async function updateSchoolById(req, res) {
     res.status(500).json({ error: 'Error updating school', details: error.message });
   }
 }
-
-// Delete school by ID
 async function deleteSchoolById(req, res) {
   const { id } = req.params;
   try {

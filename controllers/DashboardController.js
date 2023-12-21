@@ -23,7 +23,6 @@ const StatistiquesAdmin = async (req, res) => {
 };
 const SchoolStatisticsByYear = async (req, res) => {
     try {
-        // Use the aggregation framework to group schools by year and count them
         const result = await School.aggregate([
             {
                 $group: {
@@ -32,11 +31,9 @@ const SchoolStatisticsByYear = async (req, res) => {
                 }
             },
             {
-                $sort: { _id: 1 } // Sort by year in ascending order
+                $sort: { _id: 1 } 
             }
         ]);
-
-        // Transform the result for better readability
         const statisticsByYear = result.map(item => ({
             year: item._id,
             numberOfSchools: item.count
