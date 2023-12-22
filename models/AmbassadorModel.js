@@ -70,6 +70,8 @@ const AmbassadorSchema = new mongoose.Schema({
     ref: "School",
     required:true
   },
+  dateConfirmation: { type: Date, default: null },
+  confirmation: { type: Boolean, default: false },
 });
 
 const Ambassador = mongoose.model("Ambassador", AmbassadorSchema);

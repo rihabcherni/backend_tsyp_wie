@@ -82,16 +82,13 @@ const lastDonationAdmin = async (req, res) => {
 }
 const lastDonorAdmin = async (req, res) => {
     try {
-        const last5Donors = await Donor.find().sort({ timeAdded: -1 }).limit(10); 
-
+        const last5Donors = await Donor.find().sort({ timeAdded: -1 }).limit(5); 
         res.json(last5Donors);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
-
-
 const StatistiquesDonor = async (req, res) => {
     try {
         const donorId = req.params.donorId;
@@ -126,7 +123,7 @@ const lastDonationDonor = async (req, res) => {
 }
 const lastSchoolDonor = async (req, res) => {
     try {
-        const last5School = await School.find().sort({ timeAdded: -1 }).limit(10); 
+        const last5School = await School.find().sort({ timeAdded: -1 }).limit(5); 
         res.json(last5School);
     } catch (error) {
         console.error(error);
@@ -159,7 +156,6 @@ const DonationStatisticsByYearDonor = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
-
 module.exports = {
     StatistiquesAdmin,
     SchoolStatisticsByYear,

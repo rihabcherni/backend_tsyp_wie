@@ -2,6 +2,7 @@ const Ambassador = require('../models/AmbassadorModel');
 const School = require('../models/SchoolModel');
 const path = require('path');
 const multer = require('multer');
+const { now } = require('mongoose');
 const storage = multer.diskStorage({
   destination: 'uploads/school',
   filename: (req, file, cb) => {
@@ -118,9 +119,26 @@ async function deleteSchoolById(req, res) {
     res.status(500).json({ error: 'Error deleting school', details: error.message });
   }
 }
+async function acceptSchool(req, res) {
+  const { id } = req.params;
+  try {
+    const updatedSchool = await School.findByIdAndUpdate(id, {$set: { confirmation:true,dateConfirmation: now() }},{ new: true });
+
+    if (!updatedSchool) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+    const ambassadors = await Ambassador.findOneAndUpdate(
+      { ReferencedSchool: updatedSchool._id }, { $set: { confirmation:true,dateConfirmation: now()  } },{ new: true } );
+    res.status(200).json({ updatedSchool, ambassadors });
+  } catch (error) {
+    console.error('Error updating school:', error.message);
+    res.status(500).json({ error: 'Error updating school', details: error.message });
+  }
+}
 
 module.exports = {
   createSchool,
+  acceptSchool,
   getAllSchools,
   getSchoolById,
   updateSchoolById,

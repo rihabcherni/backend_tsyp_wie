@@ -26,7 +26,7 @@ const SchoolSchema = new mongoose.Schema({
   type_needs: String,
   needs: String,
   image: String,
-  dateConfirmation: Date,
+  dateConfirmation: { type: Date, default: null },
   confirmation: { type: Boolean, default: false },
 });
 

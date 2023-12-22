@@ -4,6 +4,7 @@ const Token = require("../models/TokenModel");
 const jwt = require("jsonwebtoken");
 const path = require('path');
 const multer = require('multer');
+const School = require('../models/SchoolModel');
 
 function generateToken(user) {
   try {
@@ -85,11 +86,19 @@ const createAmbassador = [uploadUserPhoto.single('photo'), async (req, res) => {
 async function getAllAmbassadors(req, res) {
   try {
     const ambassadors = await Ambassador.find();
-    res.status(200).json(ambassadors);
+    const schoolPromises = ambassadors.map(async (ambassador) => {
+      const school = await School.findById(ambassador.ReferencedSchool);
+      return { ambassador, school };
+    });
+
+    const ambassadorSchoolPairs = await Promise.all(schoolPromises);
+
+    res.status(200).json({ ambassadorSchoolPairs });
   } catch (error) {
     res.status(500).json({ error: 'Error getting Ambassadors', details: error.message });
   }
 }
+
 async function getAmbassadorById(req, res) {
   const { id } = req.params;
   try {

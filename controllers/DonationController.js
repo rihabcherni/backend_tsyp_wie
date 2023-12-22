@@ -30,7 +30,7 @@ const Donor = require('../models/DonorModel');
         try {
           const donations = await Donation.find()
           .populate('school', 'name address governorate nbr_student nbr_teachers nbr_classes type_needs needs')
-          .populate('donor', 'firstName lastName email').sort({ dateDonation: -1 }); 
+          .populate('donor', 'firstName lastName email photo').sort({ dateDonation: -1 }); 
           res.status(200).json({ success: true, data: donations });
         } catch (error) {
           res.status(500).json({ success: false, error: error.message });
@@ -41,7 +41,7 @@ const Donor = require('../models/DonorModel');
         try {
             const donations = await Donation.find({ donor: donorId })    
             .populate('school', 'name address governorate nbr_student nbr_teachers nbr_classes type_needs needs')
-            .populate('donor', 'firstName lastName email')
+            .populate('donor', 'firstName lastName email photo')
             .sort({ dateDonation: -1 }); 
           res.status(200).json({ success: true, data: donations });
         } catch (error) {
@@ -54,7 +54,7 @@ const Donor = require('../models/DonorModel');
         try {
             const donations = await Donation.find({ school: schoolId })    
             .populate('school', 'name address governorate nbr_student nbr_teachers nbr_classes type_needs needs')
-            .populate('donor', 'firstName lastName email')
+            .populate('donor', 'firstName lastName email photo')
             .sort({ dateDonation: -1 }); 
           res.status(200).json({ success: true, data: donations });
         } catch (error) {

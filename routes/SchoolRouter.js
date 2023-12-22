@@ -8,5 +8,6 @@ router.get('/getAllSchoolsDemande', schoolController.getAllSchoolsDemande);
 router.get('/getSchool/:id', schoolController.getSchoolById);
 router.put('/updateSchool/:id', schoolController.updateSchoolById);
 router.delete('/deleteSchool/:id', schoolController.deleteSchoolById);
+router.get('/acceptSchool/:id', schoolController.acceptSchool);
 
 module.exports = router;
