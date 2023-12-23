@@ -162,7 +162,6 @@ module.exports = {
     DonationStatisticsByYear,
     lastDonationAdmin,
     lastDonorAdmin,
-
     StatistiquesDonor,
     lastDonationDonor,
     lastSchoolDonor,

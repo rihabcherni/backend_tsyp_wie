@@ -36,16 +36,25 @@ async function getAdminById(req, res) {
 }
 async function updateAdminById(req, res) {
   const { id } = req.params;
-
   try {
-    const admin = await Admin.findByIdAndUpdate(id, req.body, { new: true });
-    if (!admin) {
-      return res.status(404).json({ error: "Admin not found" });
+    const { password, ...adminData } = req.body;
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      adminData.password = hashedPassword;
     }
-    res.json(admin);
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      id,
+      adminData,
+      { new: true }
+    );
+    if (!updatedAdmin) {
+      res.status(404).json({ error: 'Admin not found' });
+    } else {
+      res.status(200).json(updatedAdmin);
+    }
   } catch (error) {
-    console.error("Error updating admin by ID:", error.message);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: 'Error updating Admin', details: error.message });
   }
 }
 async function deleteAdminById(req, res) {
