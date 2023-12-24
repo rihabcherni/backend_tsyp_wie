@@ -5,82 +5,82 @@ const jwt = require("jsonwebtoken");
 const path = require('path');
 const multer = require('multer');
 
-function generateToken(user) {
-  try {
-    let jwtSecretKey = process.env.JWT_SECRET_KEY;
-    let data = {
-      time: Date(),
-      userId: user._id, 
-      user: user,
+    function generateToken(user) {
+      try {
+        let jwtSecretKey = process.env.JWT_SECRET_KEY; 
+        let data = {
+          time: Date(),
+          userId: user._id, 
+          user: user,
+        };
+
+        const token = jwt.sign(data, jwtSecretKey);
+        return token;
+      } catch (error) {
+        console.error("Error generating token:", error.message);
+        throw error; 
+      }
+    }
+    const storage = multer.diskStorage({
+      destination: 'uploads/userProfile',
+      filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+          cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+      },
+    });
+    const fileFilter = (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+          cb(null, true);
+      } else {
+          cb(new Error('Only image files are allowed!'), false);
+      }
     };
+    const uploadUserPhoto = multer({
+      storage: storage,
+      fileFilter: fileFilter,
+      limits: {
+        fileSize: 1024 * 1024 * 7, 
+      },
+    });
+    const addDonor = [uploadUserPhoto.single('photo'), async (req, res) => {
+      try {
+        const existingDonor = await Donor.findOne({ email: req.body.email });
+        if (existingDonor) {
+          return res.status(400).json({ error: 'Email already exists' });
+        }
+        const { password, ...donorData } = req.body;
+        let photo;
+        if (req.file) {
+          photo = req.file.filename;
+        }
+          const hashedPassword = await bcrypt.hash(password, 10);
+          const newDonor = new Donor({ ...donorData, password: hashedPassword, photo:photo });
+          await newDonor.save();
 
-    const token = jwt.sign(data, jwtSecretKey);
-    return token;
-  } catch (error) {
-    console.error("Error generating token:", error.message);
-    throw error; 
-  }
-}
-const storage = multer.diskStorage({
-  destination: 'uploads/userProfile',
-  filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  },
-});
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-  } else {
-      cb(new Error('Only image files are allowed!'), false);
-  }
-};
-const uploadUserPhoto = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 1024 * 1024 * 7, 
-  },
-});
-const addDonor = [uploadUserPhoto.single('photo'), async (req, res) => {
-  try {
-    const existingDonor = await Donor.findOne({ email: req.body.email });
-    if (existingDonor) {
-      return res.status(400).json({ error: 'Email already exists' });
-    }
-    const { password, ...donorData } = req.body;
-    let photo;
-    if (req.file) {
-      photo = req.file.filename;
-    }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newDonor = new Donor({ ...donorData, password: hashedPassword, photo:photo });
-      await newDonor.save();
+          const token = generateToken(newDonor);
+          const tokenDocument = new Token({ value: token });
+          await tokenDocument.save();
 
-      const token = generateToken(newDonor);
-      const tokenDocument = new Token({ value: token });
-      await tokenDocument.save();
-
-      return res.json({
-        token,
-        role: 'Donor',
-        newDonor: {
-          id: newDonor._id,
-          firstName: newDonor.firstName,
-          lastName: newDonor.lastName,
-          gender: newDonor.gender,
-          email: newDonor.email,
-          governorate: newDonor.governorate,
-          address: newDonor.address,
-          phoneNumber: newDonor.phoneNumber,
-          photo: photo,
-        },
-      });
-  } catch (error) {
-    console.error('Error adding donor:', error);
-    return res.status(400).json({ error: error.message });
-  }
-}];
+          return res.json({
+            token,
+            role: 'Donor',
+            newDonor: {
+              id: newDonor._id,
+              firstName: newDonor.firstName,
+              lastName: newDonor.lastName,
+              gender: newDonor.gender,
+              email: newDonor.email,
+              governorate: newDonor.governorate,
+              address: newDonor.address,
+              phoneNumber: newDonor.phoneNumber,
+              photo: photo,
+            },
+          });
+      } catch (error) {
+        console.error('Error adding donor:', error);
+        return res.status(400).json({ error: error.message });
+      }
+    }];
 
     async function getAllDonor(req, res) {
         try {
@@ -98,11 +98,27 @@ const addDonor = [uploadUserPhoto.single('photo'), async (req, res) => {
         }
     };
     async function updateDonor(req, res) {
-        try {
-          
-        } catch (error) {
-            res.status(400).json({ error: error.message });
+      const { id } = req.params;
+      try {
+        const { password, ...donorData } = req.body;
+    
+        if (password) {
+          const hashedPassword = await bcrypt.hash(password, 10); 
+          donorData.password = hashedPassword;
         }
+        const updatedDonor= await Donor.findByIdAndUpdate(
+          id,
+          donorData,
+          { new: true }
+        );
+        if (!updatedDonor) {
+          res.status(404).json({ error: 'Donor not found' });
+        } else {
+          res.status(200).json(updatedDonor);
+        }
+      } catch (error) {
+        res.status(500).json({ error: 'Error updating Donor', details: error.message });
+      }
     };
     async function deleteDonor(req, res) {
         const { donorId } = req.params;
@@ -118,12 +134,37 @@ const addDonor = [uploadUserPhoto.single('photo'), async (req, res) => {
           res.status(500).json({ error: 'Error deleting donor', details: error.message });
         }
     }
+    async function updateDonorPassword(req, res) {
+      const { id } = req.params;
+      const { oldPassword, newPassword } = req.body;
+    
+      try {
+        const donor = await Donor.findById(id);
+        if (!donor) {
+          return res.status(404).json({ error: 'Donor not found' });
+        }
+    
+        const isPasswordValid = await bcrypt.compare(oldPassword, donor.password);
+        if (!isPasswordValid) {
+          return res.status(400).json({ error: 'Invalid old password' });
+        }
+    
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        donor.password = hashedNewPassword;
+        await donor.save();
+    
+        res.status(200).json({ message: 'Password updated successfully' });
+      } catch (error) {
+        res.status(500).json({ error: 'Error updating password', details: error.message });
+      }
+    }
       
       module.exports = {
         addDonor,
         getAllDonor,
         getDonorDetails,
-        updateDonor,
-        deleteDonor
+        updateDonor, 
+        deleteDonor,
+        updateDonorPassword,
       };
       

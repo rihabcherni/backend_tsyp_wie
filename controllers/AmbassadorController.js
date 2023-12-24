@@ -150,11 +150,13 @@ async function deleteAmbassadorById(req, res) {
     res.status(500).json({ error: 'Error deleting Ambassador', details: error.message });
   }
 }
-
+async function updateAmbassadorPassword(req, res) {
+}
 module.exports = {
   createAmbassador,
   getAllAmbassadors,
   getAmbassadorById,
   updateAmbassadorById,
   deleteAmbassadorById,
+  updateAmbassadorPassword,
 };

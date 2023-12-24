@@ -7,5 +7,5 @@ router.get('/getAmbassador', ambassadorController.getAllAmbassadors);
 router.get('/getAmbassador/:id', ambassadorController.getAmbassadorById);
 router.put('/updateAmbassador/:id', ambassadorController.updateAmbassadorById);
 router.delete('/deleteAmbassador/:id', ambassadorController.deleteAmbassadorById);
-
+router.put('/updateAmbassadorPassword/:id', ambassadorController.updateAmbassadorPassword);
 module.exports = router;

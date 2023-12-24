@@ -25,6 +25,14 @@ const SchoolSchema = new mongoose.Schema({
   nbr_classes:String,
   type_needs: String,
   needs: String,
+  DetailsNeeds: [{
+    image: String,
+    nameNeeds: String,
+    items:[{
+      type: { type: String, required: true },  
+      number: { type: Number, required: true },
+    }],
+  }],
   image: String,
   dateConfirmation: { type: Date, default: null },
   confirmation: { type: Boolean, default: false },

@@ -72,10 +72,35 @@ async function deleteAdminById(req, res) {
   }
 }
 
+async function updateAdminPassword(req, res) {
+  const { id } = req.params;
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    const admin = await Admin.findById(id);
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, admin.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ error: 'Invalid old password' });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    admin.password = hashedNewPassword;
+    await admin.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating password', details: error.message });
+  }
+}
 module.exports = {
   createAdmin,
   getAllAdmins,
   getAdminById,
   updateAdminById,
   deleteAdminById,
+  updateAdminPassword,
 };
