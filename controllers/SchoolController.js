@@ -34,8 +34,24 @@ const createSchool = [uploadSchoolPhoto.single('image'), async (req, res) => {
     if (req.file) {
       image = req.file.filename;
     }
-
-    const newSchool = new School({ ...req.body, image:image });
+    let DetailsNeeds= [ 
+       {
+         "image": "n1.jpg",
+         "nameNeeds":"School supplies",
+         "items": [ ]
+       },
+       {
+         "image": "n2.jpg",
+         "nameNeeds":"Cloths",
+         "items": [ ]
+       },
+       {
+         "image": "n3.jpg",
+         "nameNeeds":"Money",
+         "items": [ ]
+       }
+       ];
+    const newSchool = new School({ ...req.body, image:image, DetailsNeeds:DetailsNeeds});
     await newSchool.save();
     res.status(201).json({school:newSchool});
   } catch (error) {

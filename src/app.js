@@ -18,6 +18,7 @@ const schoolRouter = require('../routes/SchoolRouter');
 const donorRouter= require("../routes/DonorRouter")
 const donationRouter= require("../routes/DonationRouter")
 const dashboardRouter= require("../routes/DashboardRouter")
+const ContactRouter= require("../routes/ContactRouter")
 
 app.get('/', (req, res) => {
 res.send('Hello wie tsyp challenge!');
@@ -30,6 +31,7 @@ app.use('/ambassador', ambassadorRouter);
 app.use('/dashboard', dashboardRouter);
 app.use('/uploads', express.static('uploads'));
 app.use("/auth", authRoutes);
+app.use("/contact", ContactRouter);
 
 app.use(express.static('uploads'));
 app.listen(port, () => {
