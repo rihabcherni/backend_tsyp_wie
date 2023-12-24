@@ -72,6 +72,7 @@ const AmbassadorSchema = new mongoose.Schema({
   },
   dateConfirmation: { type: Date, default: null },
   confirmation: { type: Boolean, default: false },
+  photo:String
 });
 
 const Ambassador = mongoose.model("Ambassador", AmbassadorSchema);
