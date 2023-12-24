@@ -7,7 +7,7 @@ const multer = require('multer');
 
 function generateToken(user) {
   try {
-    let jwtSecretKey = process.env.JWT_SECRET_KEY;
+    let jwtSecretKey = process.env.JWT_SECRET_KEY; 
     let data = {
       time: Date(),
       userId: user._id, 
@@ -98,11 +98,27 @@ const addDonor = [uploadUserPhoto.single('photo'), async (req, res) => {
         }
     };
     async function updateDonor(req, res) {
-        try {
-          
-        } catch (error) {
-            res.status(400).json({ error: error.message });
+      const { id } = req.params;
+      try {
+        const { password, ...donorData } = req.body;
+    
+        if (password) {
+          const hashedPassword = await bcrypt.hash(password, 10); 
+          donorData.password = hashedPassword;
         }
+        const updatedDonor= await Donor.findByIdAndUpdate(
+          id,
+          donorData,
+          { new: true }
+        );
+        if (!updatedDonor) {
+          res.status(404).json({ error: 'Donor not found' });
+        } else {
+          res.status(200).json(updatedDonor);
+        }
+      } catch (error) {
+        res.status(500).json({ error: 'Error updating Donor', details: error.message });
+      }
     };
     async function deleteDonor(req, res) {
         const { donorId } = req.params;
@@ -118,12 +134,37 @@ const addDonor = [uploadUserPhoto.single('photo'), async (req, res) => {
           res.status(500).json({ error: 'Error deleting donor', details: error.message });
         }
     }
+    async function updateDonorPassword(req, res) {
+      const { id } = req.params;
+      const { oldPassword, newPassword } = req.body;
+    
+      try {
+        const donor = await Donor.findById(id);
+        if (!donor) {
+          return res.status(404).json({ error: 'Donor not found' });
+        }
+    
+        const isPasswordValid = await bcrypt.compare(oldPassword, donor.password);
+        if (!isPasswordValid) {
+          return res.status(400).json({ error: 'Invalid old password' });
+        }
+    
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        donor.password = hashedNewPassword;
+        await donor.save();
+    
+        res.status(200).json({ message: 'Password updated successfully' });
+      } catch (error) {
+        res.status(500).json({ error: 'Error updating password', details: error.message });
+      }
+    }
       
       module.exports = {
         addDonor,
         getAllDonor,
         getDonorDetails,
-        updateDonor,
-        deleteDonor
+        updateDonor, 
+        deleteDonor,
+        updateDonorPassword,
       };
       
