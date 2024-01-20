@@ -61,6 +61,41 @@ const Donor = require('../models/DonorModel');
           res.status(500).json({ success: false, error: error.message });
         }
     };
+    const getAllDonorBySchool = async (req, res) => {
+        try {
+            const schoolId = req.params.schoolId;
+            const donations = await Donation.find({ school: schoolId })    
+                .populate('school', 'name address governorate nbr_student nbr_teachers nbr_classes type_needs needs')
+                .populate('donor', 'firstName lastName email photo')
+                .sort({ dateDonation: -1 });
+    
+            const uniqueDonors = [];
+            donations.forEach((donation) => {
+                const donorEmail = donation.donor.email;
+                const firstName = donation.donor.firstName;
+                const lastName = donation.donor.lastName;
+                const photo = donation.donor.photo;
+                const isUnique = !uniqueDonors.some((uniqueDonor) => uniqueDonor.email === donorEmail);
+                if (isUnique) {
+                    uniqueDonors.push({
+                        email: donorEmail,
+                        firstName: firstName,
+                        lastName: lastName,
+                        photo: photo,
+                    });
+                }
+            });
+    
+            const data = {
+                uniqueDonors: uniqueDonors,
+            };
+    
+            res.status(200).json({ success: true, data: data });
+        } catch (error) {
+            res.status(500).json({ success: false, error: error.message });
+        }
+    };
+    
     const getDonationById = async (req, res) => {
         try {
         const donation = await Donation.findById(req.params.id);
@@ -94,6 +129,19 @@ const Donor = require('../models/DonorModel');
         res.status(500).json({ success: false, error: error.message });
         }
     };
+    const getlastDonationsBySchool = async (req, res) => {
+        const schoolId = req.params.school;  
+        try {
+            const last8Donations = await Donation.find({ school: schoolId })
+            .populate('school', 'name')
+            .populate('donor', 'firstName lastName governorate').sort({ dateDonation: -1 }).limit(8); 
+
+            res.json(last8Donations);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    };
 module.exports = {
     createDonation,
     getAllDonations,
@@ -102,4 +150,6 @@ module.exports = {
     deleteDonationById,
     getAllDonationsByDonor,
     getAllDonationsBySchool,
+    getAllDonorBySchool,
+    getlastDonationsBySchool
 };

@@ -12,5 +12,5 @@ router.get("/StatistiquesDonor/:donorId",DashboardController.StatistiquesDonor);
 router.get("/lastDonationDonor/:donorId",DashboardController.lastDonationDonor);
 router.get("/lastSchoolDonor",DashboardController.lastSchoolDonor);
 router.get("/DonationStatisticsByYearDonor/:donorId",DashboardController.DonationStatisticsByYearDonor);
-
+router.get("/StatistiquesAmbassador/:schoolId",DashboardController.StatistiquesAmbassador);
 module.exports = router;

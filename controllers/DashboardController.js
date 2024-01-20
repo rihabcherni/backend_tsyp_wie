@@ -156,6 +156,34 @@ const DonationStatisticsByYearDonor = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+const StatistiquesAmbassador = async (req, res) => {
+    try {
+        const schoolId = req.params.schoolId;
+        const school = await School.findById(schoolId);
+        const donations = await Donation.find({ school: schoolId })    
+            .populate('school', 'name address governorate nbr_student nbr_teachers nbr_classes type_needs needs')
+            .populate('donor', 'firstName lastName email photo')
+            .sort({ dateDonation: -1 });
+        const uniqueDonorsCount = donations.reduce((uniqueDonors, donation) => {
+            const donorEmail = donation.donor.email;
+            if (!uniqueDonors.includes(donorEmail)) {
+                uniqueDonors.push(donorEmail);
+            }
+            return uniqueDonors;
+        }, []).length;
+
+        const data = {
+            nbr_student: school.nbr_student,
+            nbr_teachers: school.nbr_teachers,
+            donations: donations.length, 
+            uniqueDonors: uniqueDonorsCount,
+        };
+
+        res.status(200).json({ success: true, data: data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
 module.exports = {
     StatistiquesAdmin,
     SchoolStatisticsByYear,
@@ -166,4 +194,5 @@ module.exports = {
     lastDonationDonor,
     lastSchoolDonor,
     DonationStatisticsByYearDonor,
+    StatistiquesAmbassador
 };
